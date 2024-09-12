@@ -275,6 +275,7 @@ def stac(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(),  seed=0,
             vec = torch.Tensor(vec)
             _Avec = autograd.grad(Dvfv_vec, ac.v.parameters(), vec, retain_graph=True)
             Avec = torch.cat([g.contiguous().view(-1) for g in _Avec])
+
             Avec += reg * vec
             return np.array(Avec)
 
@@ -411,7 +412,8 @@ def stac(env_fn, actor_critic=core.MLPActorCritic, ac_kwargs=dict(),  seed=0,
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--env', type=str, default='CartPole-v0')
+    # parser.add_argument('--env', type=str, default='CartPole-v0')
+    parser.add_argument('--env', type=str, default='Reacher-v4')
     parser.add_argument('--hid', type=int, default=64)
     parser.add_argument('--l', type=int, default=2)
     parser.add_argument('--gamma', type=float, default=0.99)
@@ -420,6 +422,8 @@ if __name__ == '__main__':
     parser.add_argument('--steps', type=int, default=4000)
     parser.add_argument('--epochs', type=int, default=50)
     parser.add_argument('--exp_name', type=str, default='stac_test')
+    parser.add_argument('--vanilla', type=bool, default=False)
+    parser.add_argument('--reg', type=int, default=0)
     args = parser.parse_args()
 
     mpi_fork(args.cpu)  # run parallel code with mpi
@@ -430,4 +434,4 @@ if __name__ == '__main__':
     stac(lambda : gym.make(args.env), actor_critic=core.MLPActorCritic,
         ac_kwargs=dict(hidden_sizes=[args.hid]*args.l), gamma=args.gamma, 
         seed=args.seed, steps_per_epoch=args.steps, epochs=args.epochs,
-        logger_kwargs=logger_kwargs, vanilla=False)
+        logger_kwargs=logger_kwargs, vanilla=args.vanilla, reg=args.reg)
