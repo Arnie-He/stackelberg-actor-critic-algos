@@ -9,6 +9,7 @@ import spinup.algos.pytorch.stac.core as core
 from spinup.utils.logx import EpochLogger
 from spinup.utils.mpi_pytorch import setup_pytorch_for_mpi, sync_params, mpi_avg_grads
 from spinup.utils.mpi_tools import mpi_fork, mpi_avg, proc_id, mpi_statistics_scalar, num_procs
+import ast
 
 
 class STACBuffer:
@@ -413,8 +414,8 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     # parser.add_argument('--env', type=str, default='CartPole-v0')
-    parser.add_argument('--env', type=str, default='Reacher-v4')
-    parser.add_argument('--hid', type=int, default=64)
+    parser.add_argument('--env', type=str, default='CartPole-v0')
+    parser.add_argument('--hid', type=int, default=32)
     parser.add_argument('--l', type=int, default=2)
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--seed', '-s', type=int, default=0)
@@ -425,11 +426,14 @@ if __name__ == '__main__':
     parser.add_argument('--vanilla', type=bool, default=False)
     parser.add_argument('--reg', type=int, default=0)
     args = parser.parse_args()
+    # Networksize
+    # hiddensizes = (64,32)
 
     mpi_fork(args.cpu)  # run parallel code with mpi
 
     from spinup.utils.run_utils import setup_logger_kwargs
-    logger_kwargs = setup_logger_kwargs(args.exp_name, args.seed)
+    dir_name = args.exp_name + args.env
+    logger_kwargs = setup_logger_kwargs(dir_name, args.seed)
 
     stac(lambda : gym.make(args.env), actor_critic=core.MLPActorCritic,
         ac_kwargs=dict(hidden_sizes=[args.hid]*args.l), gamma=args.gamma, 
